@@ -3,8 +3,16 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "engines": {
+    "node": ">=22 <23"
+  },
   "scripts": {
     "test": "node --test",
-    "check": "node --check src/health.mjs && node --check src/link-policy.mjs && node --check src/request-validation.mjs"
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=src/*.mjs --test-coverage-lines=100 --test-coverage-branches=100 --test-coverage-functions=100",
+    "check": "node --check src/health.mjs && node --check src/link-policy.mjs && node --check src/request-validation.mjs && node --check src/auth-endpoint.mjs && node --check src/admin-authz.mjs && node --check src/admin-session-service.mjs && node --check src/admin-session-http.mjs && node --check src/node-http-adapter.mjs && node --check src/vercel-client-key.mjs && node --check src/admin-rate-limiter.mjs && node --check src/vercel-admin-session-app.mjs && node --check api/admin-session.mjs"
+  },
+  "dependencies": {
+    "@upstash/ratelimit": "2.0.8",
+    "@upstash/redis": "1.38.0"
   }
 }

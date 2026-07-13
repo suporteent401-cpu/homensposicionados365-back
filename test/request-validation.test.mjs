@@ -14,3 +14,14 @@ test('chave de idempotência precisa ser UUID', () => {
   assert.equal(validateIdempotencyKey('550e8400-e29b-41d4-a716-446655440000'), '550e8400-e29b-41d4-a716-446655440000');
   assert.throws(() => validateIdempotencyKey('duplicate-click'));
 });
+
+test('rejeita tipos, duplicidade e limites/cursor inválidos', () => {
+  assert.throws(() => parsePagination({}));
+  assert.throws(() => parsePagination(new URLSearchParams('limit=1&limit=2')));
+  assert.throws(() => parsePagination(new URLSearchParams('cursor=a&cursor=b')));
+  assert.throws(() => parsePagination(new URLSearchParams('limit=0')));
+  assert.throws(() => parsePagination(new URLSearchParams('cursor=%20')));
+  assert.deepEqual(parsePagination(new URLSearchParams('limit=50&cursor=abc_-')), { limit: 50, cursor: 'abc_-' });
+  assert.throws(() => validateIdempotencyKey(null));
+  assert.throws(() => validateIdempotencyKey('not-a-uuid'));
+});

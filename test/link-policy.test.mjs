@@ -21,3 +21,22 @@ test('Teams exige host explicitamente aprovado', () => {
   assert.equal(normalizeTeamsUrl('https://teams.microsoft.com/l/meetup-join/abc', new Set(['teams.microsoft.com'])), 'https://teams.microsoft.com/l/meetup-join/abc');
   assert.throws(() => normalizeTeamsUrl('https://teams.evil.example/l/meetup-join/abc', new Set(['teams.microsoft.com'])));
 });
+
+test('normaliza URL embed do YouTube sem query ou fragmento', () => {
+  assert.deepEqual(normalizeYouTubeUrl('https://www.youtube.com/embed/AbCdEf123_-'), {
+    videoId: 'AbCdEf123_-', url: 'https://youtu.be/AbCdEf123_-'
+  });
+});
+
+test('exercita guardas de transporte, formato e configuração de links', () => {
+  for (const value of [null, 'x'.repeat(2049), 'not a url', 'http://youtu.be/AbCdEf123_-',
+    'https://user@youtu.be/AbCdEf123_-', 'https://user:pass@youtu.be/AbCdEf123_-',
+    'https://youtu.be:444/AbCdEf123_-', 'https://evil.example/AbCdEf123_-',
+    'https://youtu.be/AbCdEf123_-?x=1', 'https://youtube.com/watch?v=AbCdEf123_-&x=1',
+    'https://youtube.com/embed/AbCdEf123_-#x']) {
+    assert.throws(() => normalizeYouTubeUrl(value));
+  }
+  assert.throws(() => normalizeTeamsUrl('https://teams.example/path'));
+  assert.throws(() => normalizeTeamsUrl('https://teams.example/path', new Set()));
+  assert.throws(() => normalizeTeamsUrl('https://evil.example/path', new Set(['teams.example'])));
+});
