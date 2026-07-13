@@ -5,6 +5,6 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "check": "node --check src/health.mjs"
+    "check": "node --check src/health.mjs && node --check src/link-policy.mjs && node --check src/request-validation.mjs"
   }
 }
