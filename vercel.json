@@ -3,7 +3,31 @@
   "framework": null,
   "rewrites": [
     {
-      "source": "/v1/admin/session/:path*",
+      "source": "/v1/admin/session/login",
+      "destination": "/api/admin-session"
+    },
+    {
+      "source": "/v1/admin/session/mfa/factors",
+      "destination": "/api/admin-session"
+    },
+    {
+      "source": "/v1/admin/session/mfa/enroll",
+      "destination": "/api/admin-session"
+    },
+    {
+      "source": "/v1/admin/session/mfa/challenge",
+      "destination": "/api/admin-session"
+    },
+    {
+      "source": "/v1/admin/session/mfa/verify",
+      "destination": "/api/admin-session"
+    },
+    {
+      "source": "/v1/admin/session/refresh",
+      "destination": "/api/admin-session"
+    },
+    {
+      "source": "/v1/admin/session/logout",
       "destination": "/api/admin-session"
     }
   ]

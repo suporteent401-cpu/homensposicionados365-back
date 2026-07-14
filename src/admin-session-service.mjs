@@ -24,6 +24,17 @@ function normalizeSession(payload, next, maxAccessTokenLifetime) {
     || typeof payload?.refresh_token !== 'string' || !payload.refresh_token
     || !Number.isInteger(payload?.expires_in) || payload.expires_in <= 0
     || payload.expires_in > maxAccessTokenLifetime) throw unavailable();
+  let claims;
+  try {
+    const parts = payload.access_token.split('.');
+    if (parts.length !== 3) throw new TypeError();
+    claims = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
+  } catch {
+    throw unavailable();
+  }
+  if (!claims || typeof claims !== 'object' || Array.isArray(claims)
+    || !Number.isInteger(claims.iat) || !Number.isInteger(claims.exp)
+    || claims.exp <= claims.iat || claims.exp - claims.iat > maxAccessTokenLifetime) throw unavailable();
   return {
     accessToken: payload.access_token,
     refreshToken: payload.refresh_token,

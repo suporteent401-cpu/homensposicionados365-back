@@ -11,9 +11,14 @@ test('entrypoint Vercel é lazy, fail-closed e rewrite é estrito', async () => 
   assert.doesNotMatch(await response.text(), /env|token|secret|supabase|upstash/i);
 
   const config = JSON.parse(await readFile(new URL('../vercel.json', import.meta.url), 'utf8'));
-  assert.deepEqual(config.rewrites, [{ source: '/v1/admin/session/:path*', destination: '/api/admin-session' }]);
+  const sessionPaths = ['login', 'mfa/factors', 'mfa/enroll', 'mfa/challenge', 'mfa/verify', 'refresh', 'logout'];
+  assert.deepEqual(config.rewrites, sessionPaths.map((path) => ({
+    source: `/v1/admin/session/${path}`,
+    destination: '/api/admin-session'
+  })));
+  assert.ok(config.rewrites.every(({ source, destination }) => !source.includes(':') && !destination.includes('?')));
   assert.equal(config.framework, null);
-  assert.equal(config.rewrites.length, 1);
+  assert.equal(config.rewrites.length, sessionPaths.length);
 });
 
 test('entrypoint inicializa uma vez na primeira request e preserva Response/cookies', async () => {

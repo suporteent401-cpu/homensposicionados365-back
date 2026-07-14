@@ -6,11 +6,12 @@ const authUrl = 'http://127.0.0.1:54321/auth/v1';
 const admin = { id: '11111111-1111-4111-8111-111111111111', email_confirmed_at: '2026-07-13T00:00:00Z', app_metadata: { role: 'admin' }, factors: [] };
 const factorId = '33333333-3333-4333-8333-333333333333';
 
-function token(aal = 'aal2') {
+function token(aal = 'aal2', claims = {}) {
   const encode = (value) => Buffer.from(JSON.stringify(value)).toString('base64url');
   return `${encode({ alg: 'HS256' })}.${encode({
-    sub: admin.id, iss: authUrl, aud: 'authenticated', exp: 2_000_000_000, aal,
-    amr: aal === 'aal2' ? [{ method: 'password' }, { method: 'totp' }] : [{ method: 'password' }]
+    sub: admin.id, iss: authUrl, aud: 'authenticated', iat: 1_999_996_400, exp: 2_000_000_000, aal,
+    amr: aal === 'aal2' ? [{ method: 'password' }, { method: 'totp' }] : [{ method: 'password' }],
+    ...claims
   })}.test-signature`;
 }
 
@@ -189,6 +190,18 @@ test('valida configuração, lifetime e mapeia respostas upstream sem detalhes',
   }));
   await assert.rejects(() => tooLong.login({ email: 'a@b.c', password: 'x' }), (error) => error.code === 'AUTH_UNAVAILABLE');
 
+  const jwtTooLong = createSupabaseAdminSessionService({
+    authUrl, anonKey: 'local-public-key', maxAccessTokenLifetime: 900,
+    fetchImpl: async (url) => url.includes('/token?grant_type=password')
+      ? response(200, {
+        access_token: token('aal1', { iat: 1_999_999_099, exp: 2_000_000_000 }),
+        refresh_token: 'refresh', expires_in: 900
+      })
+      : response(200, admin)
+  });
+  await assert.rejects(() => jwtTooLong.login({ email: 'a@b.c', password: 'x' }),
+    (error) => error.code === 'AUTH_UNAVAILABLE');
+
   for (const [status, code] of [[429, 'RATE_LIMITED'], [422, 'AUTH_FLOW_ERROR']]) {
     const api = service(async () => response(status, { detail: 'private' }));
     await assert.rejects(() => api.logout({ accessToken: token() }), (error) => error.code === code && !error.message.includes('private'));
@@ -221,12 +234,20 @@ test('exercita todas as guardas de configuração e formato de sessão', async (
     { maxAccessTokenLifetime: 60.5 }, { maxTotpFactors: 11 }, { maxTotpFactors: 1.5 }
   ]) assert.throws(() => createSupabaseAdminSessionService({ ...base, ...override }));
 
+  const jwtWithClaims = (claims) => `header.${Buffer.from(JSON.stringify(claims)).toString('base64url')}.signature`;
   const invalidSessions = [
     {}, { access_token: '', refresh_token: 'r', expires_in: 3600 },
     { access_token: 'a', refresh_token: null, expires_in: 3600 },
     { access_token: 'a', refresh_token: '', expires_in: 3600 },
     { access_token: 'a', refresh_token: 'r', expires_in: 1.5 },
-    { access_token: 'a', refresh_token: 'r', expires_in: 0 }
+    { access_token: 'a', refresh_token: 'r', expires_in: 0 },
+    { access_token: 'not-a-jwt', refresh_token: 'r', expires_in: 60 },
+    { access_token: 'header.not-json.signature', refresh_token: 'r', expires_in: 60 },
+    { access_token: jwtWithClaims(null), refresh_token: 'r', expires_in: 60 },
+    { access_token: jwtWithClaims([]), refresh_token: 'r', expires_in: 60 },
+    { access_token: jwtWithClaims({}), refresh_token: 'r', expires_in: 60 },
+    { access_token: jwtWithClaims({ iat: 1 }), refresh_token: 'r', expires_in: 60 },
+    { access_token: jwtWithClaims({ iat: 2, exp: 1 }), refresh_token: 'r', expires_in: 60 }
   ];
   for (const payload of invalidSessions) {
     const api = service(async () => response(200, payload));
