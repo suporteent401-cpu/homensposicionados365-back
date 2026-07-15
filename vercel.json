@@ -29,6 +29,10 @@
     {
       "source": "/v1/admin/session/logout",
       "destination": "/api/admin-session"
+    },
+    {
+      "source": "/v1/admin/devotionals",
+      "destination": "/api/admin-content"
     }
   ]
 }

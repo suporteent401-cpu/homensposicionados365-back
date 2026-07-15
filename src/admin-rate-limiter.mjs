@@ -10,7 +10,8 @@ export const ADMIN_RATE_POLICIES = Object.freeze({
   '/mfa/challenge:ip': [30, 600], '/mfa/challenge:subject': [10, 600],
   '/mfa/verify:ip': [30, 600], '/mfa/verify:subject': [6, 300],
   '/refresh:ip': [60, 600], '/refresh:subject': [20, 600],
-  '/logout:ip': [60, 600], '/logout:subject': [20, 600]
+  '/logout:ip': [60, 600], '/logout:subject': [20, 600],
+  '/devotionals/create:ip': [30, 600], '/devotionals/create:subject': [20, 600]
 });
 
 function normalizeNamespace(value) {

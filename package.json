@@ -10,7 +10,7 @@
     "test": "node --test",
     "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=src/*.mjs --test-coverage-lines=100 --test-coverage-branches=100 --test-coverage-functions=100",
     "test:upstash-preview": "node scripts/verify-preview-upstash.mjs",
-    "check": "node --check src/health.mjs && node --check src/link-policy.mjs && node --check src/request-validation.mjs && node --check src/auth-endpoint.mjs && node --check src/admin-authz.mjs && node --check src/admin-session-service.mjs && node --check src/admin-session-http.mjs && node --check src/node-http-adapter.mjs && node --check src/vercel-client-key.mjs && node --check src/admin-rate-limiter.mjs && node --check src/vercel-admin-session-app.mjs && node --check api/admin-session.mjs && node --check scripts/verify-preview-upstash.mjs"
+    "check": "node --check src/health.mjs && node --check src/link-policy.mjs && node --check src/request-validation.mjs && node --check src/auth-endpoint.mjs && node --check src/admin-authz.mjs && node --check src/admin-session-service.mjs && node --check src/admin-session-http.mjs && node --check src/admin-content.mjs && node --check src/admin-content-http.mjs && node --check src/supabase-admin-content-repository.mjs && node --check src/node-http-adapter.mjs && node --check src/vercel-client-key.mjs && node --check src/admin-rate-limiter.mjs && node --check src/vercel-admin-session-app.mjs && node --check src/vercel-admin-content-app.mjs && node --check api/admin-session.mjs && node --check api/admin-content.mjs && node --check scripts/verify-preview-upstash.mjs"
   },
   "dependencies": {
     "@upstash/ratelimit": "2.0.8",
